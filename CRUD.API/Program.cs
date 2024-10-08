@@ -7,6 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddDbContext<OrderContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgress")));
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
@@ -35,6 +45,8 @@ app.MapPost("/orders", async (Order order, IOrderRepository repository, Cancella
 app.MapPatch("/orders/{id}", async (Guid id, decimal price, IOrderRepository repository, CancellationToken cancellationToken) => await repository.UpdateOrderPriceAsync(id, price))
 .WithName("Update order price")
 .WithOpenApi();
+
+app.UseCors();
 
 app.Run();
 
